@@ -1,0 +1,42 @@
+Training Log - 20250501_155013
+Dataset: R1
+Location: wrist
+Model Type: Transformer
+CV Type: 5-Fold (5 folds)
+================================================================================
+
+Hyperparameters:
+----------------------------------------
+n_classes: 8
+n_features: 3
+n_encoder_layers: 2
+n_heads: 4
+embed_dim: 64
+ff_dim: 128
+n_epochs: 100
+l2_loss: 0.0001
+learning_rate: 0.0001
+dropout: 0.1
+segment_time_size: 1024
+batch_size: 32
+device: cuda
+random_seed: 13
+overlap: 0.5
+time_step: 1018
+cv_type: 5-Fold
+n_folds: 5
+early_stopping_patience: 20
+early_stopping_metric: validation_f1_score
+
+Fold Results:
+----------------------------------------
+Fold 1: Accuracy: 0.7336, F1-Score: 0.7483
+Fold 2: Accuracy: 0.6852, F1-Score: 0.7021
+Fold 3: Accuracy: 0.7358, F1-Score: 0.7462
+Fold 4: Accuracy: 0.7010, F1-Score: 0.7188
+Fold 5: Accuracy: 0.6912, F1-Score: 0.7041
+
+Final Results:
+----------------------------------------
+Average Accuracy: 0.7094 ± 0.0213
+Average F1-Score: 0.7239 ± 0.0199

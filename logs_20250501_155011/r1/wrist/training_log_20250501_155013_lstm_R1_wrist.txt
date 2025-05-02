@@ -1,0 +1,40 @@
+Training Log - 20250501_155013
+Dataset: R1
+Location: wrist
+Model Type: lstm
+CV Type: 5-Fold (5 folds)
+================================================================================
+
+Hyperparameters:
+----------------------------------------
+n_classes: 8
+n_features: 3
+n_lstm_layers: 2
+n_epochs: 100
+l2_loss: 0.0015
+learning_rate: 0.0004
+dropout: 0.1
+segment_time_size: 1024
+n_hidden_neurons: 64
+batch_size: 32
+device: cuda
+random_seed: 13
+overlap: 0.5
+time_step: 1018
+cv_type: 5-Fold
+n_folds: 5
+early_stopping_patience: 20
+early_stopping_metric: validation_f1_score
+
+Fold Results:
+----------------------------------------
+Fold 1: Accuracy: 0.4691, F1-Score: 0.4887
+Fold 2: Accuracy: 0.4761, F1-Score: 0.5047
+Fold 3: Accuracy: 0.4952, F1-Score: 0.5261
+Fold 4: Accuracy: 0.5640, F1-Score: 0.5970
+Fold 5: Accuracy: 0.4454, F1-Score: 0.4501
+
+Final Results:
+----------------------------------------
+Average Accuracy: 0.4900 ± 0.0403
+Average F1-Score: 0.5133 ± 0.0487

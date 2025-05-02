@@ -35,17 +35,17 @@ def run_model(model_type, dataset_name, location, log_dir_base):
         f.write(f"{'=' * 80}\n")
 
         # Determine the script and command based on model_type
-        script_name = ""
+        script_parts = ""
         command = []
         if model_type == "rf":
-            script_name = "HAR_Recognition_RandomForest.py"
-            command = ["python", script_name, "--cv_type", "kfold", "--k_folds", "5"]
+            script_parts = "HAR_Recognition_RandomForest.py --cv_type kfold --k_folds 5".split()
+            command = ["python"] + script_parts
         elif model_type == "transformer":
-            script_name = "HAR_Recognition_Transformer.py"
-            command = ["python", script_name, "--cv_type", "kfold", "--k_folds", "5"]
+            script_parts = "HAR_Recognition_Transformer.py --cv_type kfold --k_folds 5".split()
+            command = ["python"] + script_parts
         elif model_type in ["lstm", "cnn"]:
-            script_name = "HAR_Recognition_LSTM_CNN.py"
-            command = ["python", script_name, "--model", model_type, "--cv_type", "kfold", "--k_folds", "5"]
+            script_parts = "HAR_Recognition_LSTM_CNN.py --cv_type kfold --k_folds 5".split()
+            command = ["python"] + script_parts
         else:
             error_msg = f"Error: Unknown model type '{model_type}'"
             f.write(f"{error_msg}\n")
@@ -57,7 +57,7 @@ def run_model(model_type, dataset_name, location, log_dir_base):
         env["LOCATION"] = location
         env["LOG_DIR"] = log_dir_base  # Pass the log directory to the HAR scripts
 
-        # Redirect script output to the log file
+        # Log the command correctly
         f.write(f"Executing command: {' '.join(command)} with DATASET_NAME={dataset_name} LOCATION={location} LOG_DIR={log_dir_base}\n")
         f.flush()
 
@@ -79,7 +79,7 @@ def run_model(model_type, dataset_name, location, log_dir_base):
         return config_name, True, time_taken
     except FileNotFoundError:
         with open(log_file, "a") as f:
-            f.write(f"Error: Script not found at {script_name}\n")
+            f.write(f"Error: Script {command[1] if len(command) > 1 else 'UNKNOWN'} not found\n") # Use command[1] for script name
         return config_name, False, 0
     except subprocess.CalledProcessError as e:
         with open(log_file, "a") as f:
@@ -116,11 +116,11 @@ def main():
     print(f"Logs will be stored in: {os.path.abspath(log_dir)}")
 
     # Define datasets, models, and locations
-    datasets = ["R1", "WISDM"]
+    datasets = ["R1"]
     models = [
         "rf",
         "cnn",
-        "lstm",
+        # "lstm",
         "transformer",
     ]
     locations_r1 = ["wrist", "thigh"]

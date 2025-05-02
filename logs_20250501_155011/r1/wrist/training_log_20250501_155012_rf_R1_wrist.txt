@@ -1,0 +1,30 @@
+Random Forest Training Log - 20250501_155012
+Dataset: R1
+Location: wrist
+CV Type: 5-Fold (5 folds)
+================================================================================
+
+Hyperparameters:
+----------------------------------------
+n_classes: 8
+n_estimators: 100
+max_features: sqrt
+random_state: 13
+segment_time_size: 1024
+overlap: 0.5
+time_step: 1018
+cv_type: 5-Fold
+n_folds: 5
+
+Fold Results:
+----------------------------------------
+Fold 1: Accuracy: 0.8005, F1-Score: 0.7956
+Fold 2: Accuracy: 0.7907, F1-Score: 0.7861
+Fold 3: Accuracy: 0.7873, F1-Score: 0.7836
+Fold 4: Accuracy: 0.7999, F1-Score: 0.7966
+Fold 5: Accuracy: 0.8019, F1-Score: 0.7982
+
+Final Results:
+----------------------------------------
+Average Accuracy: 0.7960 ± 0.0059
+Average F1-Score: 0.7920 ± 0.0060

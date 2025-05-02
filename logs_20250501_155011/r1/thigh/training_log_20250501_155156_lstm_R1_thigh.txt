@@ -1,0 +1,40 @@
+Training Log - 20250501_155156
+Dataset: R1
+Location: thigh
+Model Type: lstm
+CV Type: 5-Fold (5 folds)
+================================================================================
+
+Hyperparameters:
+----------------------------------------
+n_classes: 8
+n_features: 3
+n_lstm_layers: 2
+n_epochs: 100
+l2_loss: 0.0015
+learning_rate: 0.0004
+dropout: 0.1
+segment_time_size: 1024
+n_hidden_neurons: 64
+batch_size: 32
+device: cuda
+random_seed: 13
+overlap: 0.5
+time_step: 1018
+cv_type: 5-Fold
+n_folds: 5
+early_stopping_patience: 20
+early_stopping_metric: validation_f1_score
+
+Fold Results:
+----------------------------------------
+Fold 1: Accuracy: 0.8154, F1-Score: 0.8325
+Fold 2: Accuracy: 0.7099, F1-Score: 0.7433
+Fold 3: Accuracy: 0.8714, F1-Score: 0.8720
+Fold 4: Accuracy: 0.8489, F1-Score: 0.8552
+Fold 5: Accuracy: 0.8734, F1-Score: 0.8775
+
+Final Results:
+----------------------------------------
+Average Accuracy: 0.8238 ± 0.0607
+Average F1-Score: 0.8361 ± 0.0490

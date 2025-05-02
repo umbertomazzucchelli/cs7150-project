@@ -61,10 +61,10 @@ COLUMN_NAMES = ["user", "activity", "timestamp", "x-axis", "y-axis", "z-axis"]  
 RANDOM_SEED = 13
 
 # Default parameters
-SEGMENT_TIME_SIZE = 800  # Default for R1 (80Hz * 10s = 800 samples)
+SEGMENT_TIME_SIZE = 1024  # Default for R1 (80Hz * 10s = 800 samples)
 # Adjust for WISDM's 20Hz sampling rate
 if DATASET_NAME == "WISDM":
-    SEGMENT_TIME_SIZE = 200  # 20Hz * 10s = 200 samples
+    SEGMENT_TIME_SIZE = 256  # 20Hz * 10s = 200 samples
 
 OVERLAP = 0.5
 TIME_STEP = int(SEGMENT_TIME_SIZE * (1 - OVERLAP / 100))

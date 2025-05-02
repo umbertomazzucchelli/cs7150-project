@@ -1,0 +1,42 @@
+Training Log - 20250501_155157
+Dataset: R1
+Location: thigh
+Model Type: Transformer
+CV Type: 5-Fold (5 folds)
+================================================================================
+
+Hyperparameters:
+----------------------------------------
+n_classes: 8
+n_features: 3
+n_encoder_layers: 2
+n_heads: 4
+embed_dim: 64
+ff_dim: 128
+n_epochs: 100
+l2_loss: 0.0001
+learning_rate: 0.0001
+dropout: 0.1
+segment_time_size: 1024
+batch_size: 32
+device: cuda
+random_seed: 13
+overlap: 0.5
+time_step: 1018
+cv_type: 5-Fold
+n_folds: 5
+early_stopping_patience: 20
+early_stopping_metric: validation_f1_score
+
+Fold Results:
+----------------------------------------
+Fold 1: Accuracy: 0.9096, F1-Score: 0.9097
+Fold 2: Accuracy: 0.8996, F1-Score: 0.9008
+Fold 3: Accuracy: 0.9068, F1-Score: 0.9069
+Fold 4: Accuracy: 0.8965, F1-Score: 0.8968
+Fold 5: Accuracy: 0.8989, F1-Score: 0.8994
+
+Final Results:
+----------------------------------------
+Average Accuracy: 0.9023 ± 0.0050
+Average F1-Score: 0.9027 ± 0.0048

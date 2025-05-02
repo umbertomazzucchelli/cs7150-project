@@ -1,0 +1,30 @@
+Random Forest Training Log - 20250501_155012
+Dataset: R1
+Location: thigh
+CV Type: 5-Fold (5 folds)
+================================================================================
+
+Hyperparameters:
+----------------------------------------
+n_classes: 8
+n_estimators: 100
+max_features: sqrt
+random_state: 13
+segment_time_size: 1024
+overlap: 0.5
+time_step: 1018
+cv_type: 5-Fold
+n_folds: 5
+
+Fold Results:
+----------------------------------------
+Fold 1: Accuracy: 0.9337, F1-Score: 0.9328
+Fold 2: Accuracy: 0.9297, F1-Score: 0.9284
+Fold 3: Accuracy: 0.9363, F1-Score: 0.9356
+Fold 4: Accuracy: 0.9295, F1-Score: 0.9283
+Fold 5: Accuracy: 0.9327, F1-Score: 0.9310
+
+Final Results:
+----------------------------------------
+Average Accuracy: 0.9324 ± 0.0026
+Average F1-Score: 0.9312 ± 0.0028

@@ -24,7 +24,7 @@ DATASET_PARAMS = {
     "R1": {
         "LABELS": ["Sitting", "Standing", "Walking", "Walking_Up_Stairs", "Walking_Down_Stairs", "Biking", "Gym_Exercises", "Lying_Down"],
         "N_CLASSES": 8,
-        "data_file_pattern": "data/combined/R1_{location}_data_clean.npy",
+        "data_file_pattern": "data/combined/R1_{location}_data.npy",
     },
     "WISDM": {
         "LABELS": ["Walking", "Jogging", "Upstairs", "Downstairs", "Sitting", "Standing"],
@@ -68,10 +68,10 @@ else:
 
 # Data parameters (Shared)
 N_FEATURES = 3  # x-acceleration, y-acceleration, z-acceleration
-SEGMENT_TIME_SIZE = 800  # Default for R1 (80Hz * 10s = 800 samples)
+SEGMENT_TIME_SIZE = 1024  # Default for R1 (80Hz * 10s = 800 samples)
 # Adjust for WISDM's 20Hz sampling rate
 if DATASET_NAME == "WISDM":
-    SEGMENT_TIME_SIZE = 200  # 20Hz * 10s = 200 samples
+    SEGMENT_TIME_SIZE = 256  # 20Hz * 10s = 200 samples
 OVERLAP = 0.5
 TIME_STEP = int(SEGMENT_TIME_SIZE * (1 - OVERLAP / 100))
 
@@ -89,6 +89,11 @@ EMBED_DIM = 64  # Embedding dimension (must be divisible by N_HEADS)
 N_HEADS = 4  # Number of attention heads
 N_ENCODER_LAYERS = 2  # Number of Transformer encoder layers
 FF_DIM = 128  # Dimension of the feedforward network model in nn.TransformerEncoderLayer
+
+# CNN hyperparameters (for CNN+Transformer)
+CNN_FILTERS = 32
+CNN_KERNEL_SIZE = 5
+POOL_SIZE = 4
 
 
 ##################################################
@@ -163,23 +168,56 @@ class PositionalEncoding(nn.Module):
 ### TRANSFORMER MODEL CLASS (Unchanged, uses global N_CLASSES)
 ##################################################
 class Transformer_HAR(nn.Module):
-    def __init__(self, input_dim, embed_dim, num_heads, num_encoder_layers, ff_dim, num_classes, seq_len, dropout=0.1):
+    def __init__(self, input_dim, embed_dim, num_heads, num_encoder_layers, ff_dim, num_classes, seq_len, dropout=0.1, 
+                 cnn_filters=32, cnn_kernel_size=5, pool_size=4):
         super(Transformer_HAR, self).__init__()
         self.embed_dim = embed_dim
         self.seq_len = seq_len
-        self.input_embedding = nn.Linear(input_dim, embed_dim)
-        self.pos_encoder = PositionalEncoding(embed_dim, dropout, max_len=seq_len + 1)
+        self.cnn_filters = cnn_filters
+        self.cnn_kernel_size = cnn_kernel_size
+        self.pool_size = pool_size
+
+        # CNN Block
+        # Input: (Batch, Features, SeqLen)
+        self.conv1 = nn.Conv1d(in_channels=input_dim, out_channels=cnn_filters, kernel_size=cnn_kernel_size, padding='same')
+        self.relu = nn.ReLU()
+        self.pool = nn.MaxPool1d(kernel_size=pool_size)
+        
+        # Calculate sequence length after pooling
+        # Input to pool: (Batch, cnn_filters, SeqLen)
+        # Output of pool: (Batch, cnn_filters, floor(SeqLen / pool_size))
+        self.new_seq_len = seq_len // pool_size # Use integer division
+
+        # Embedding layer now takes CNN output channels as input dim
+        self.input_embedding = nn.Linear(cnn_filters, embed_dim)
+        
+        # Positional Encoding needs the new sequence length
+        self.pos_encoder = PositionalEncoding(embed_dim, dropout, max_len=self.new_seq_len + 1) 
+        
+        # Transformer Encoder Layer (batch_first=True means input/output: Batch, Seq, Feature)
         encoder_layer = nn.TransformerEncoderLayer(d_model=embed_dim, nhead=num_heads, dim_feedforward=ff_dim, dropout=dropout, batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_encoder_layers)
         self.fc = nn.Linear(embed_dim, num_classes)  # Uses num_classes passed during init
 
     def forward(self, x):
-        x = self.input_embedding(x) * math.sqrt(self.embed_dim)
-        x = x.permute(1, 0, 2)
-        x = self.pos_encoder(x)
-        x = x.permute(1, 0, 2)
+        # Input x shape: (Batch, SeqLen, Features)
+        
+        # CNN Block
+        x = x.permute(0, 2, 1)  # -> (Batch, Features, SeqLen)
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.pool(x)       # -> (Batch, cnn_filters, new_seq_len)
+        x = x.permute(0, 2, 1)  # -> (Batch, new_seq_len, cnn_filters)
+
+        # Transformer Block
+        x = self.input_embedding(x) * math.sqrt(self.embed_dim) # Input embedding now expects cnn_filters
+        # Input to pos_encoder (and TransformerEncoderLayer) needs to be permuted if batch_first=False, but we use batch_first=True
+        # So, keep as (Batch, new_seq_len, embed_dim)
+        # x = x.permute(1, 0, 2) # No longer needed for batch_first=True
+        x = self.pos_encoder(x) # Apply positional encoding directly
+        # x = x.permute(1, 0, 2) # No longer needed for batch_first=True
         x = self.transformer_encoder(x)
-        x = x.mean(dim=1)
+        x = x.mean(dim=1) # Global Average Pooling over the sequence dimension
         out = self.fc(x)
         return out
 
@@ -319,6 +357,9 @@ def train_evaluate_fold(X_train, y_train, X_val, y_val, X_test, y_test):
         num_classes=N_CLASSES,  # Pass the correct N_CLASSES
         seq_len=SEGMENT_TIME_SIZE,
         dropout=DROPOUT,
+        cnn_filters=CNN_FILTERS,
+        cnn_kernel_size=CNN_KERNEL_SIZE,
+        pool_size=POOL_SIZE,
     ).to(DEVICE)
 
     criterion = nn.CrossEntropyLoss(weight=class_weights)
@@ -550,6 +591,9 @@ if __name__ == "__main__":
             num_classes=N_CLASSES,
             seq_len=SEGMENT_TIME_SIZE,
             dropout=DROPOUT,
+            cnn_filters=CNN_FILTERS,
+            cnn_kernel_size=CNN_KERNEL_SIZE,
+            pool_size=POOL_SIZE,
         ).to(DEVICE)
 
         criterion = nn.CrossEntropyLoss(weight=class_weights)
